@@ -6,24 +6,24 @@ import org.json.JSONObject;
 
 public class Event {
 	private String name;
-	private int numParticipants;
+	private int	 numParticipants;
 	private int locx;
 	private int locy;
-	private Participant[] participantArray;
+	public Participant[] participantArray;
 	private JSONArray participants;
 	
-	Event(JSONObject event) throws JSONException{
+	public Event(JSONObject event) throws JSONException{
 		name = event.getString("event");
 		numParticipants = event.getInt("numParticipants");
 		locx = event.getInt("locx");
 		locy = event.getInt("locy");
 		participants = event.getJSONArray("participants");
-		createParticipants(numParticipants);
+		createParticipants();
 	}
 	
-	private void createParticipants(int i) throws JSONException {
-		for(i = 0; i < numParticipants; i++) {
-			participantArray = new Participant[numParticipants];
+	private void createParticipants() throws JSONException {
+		participantArray = new Participant[this.getNumParticipants()];
+		for(int i = 0; i < this.getNumParticipants(); i++) {
 			participantArray[i] = new Participant(participants.getJSONObject(i));		
 		}
 	}
@@ -42,5 +42,8 @@ public class Event {
 	
 	public int gety() {
 		return locy;
+	}
+	public Participant[] getParticipants(){	
+		return participantArray;
 	}
 }

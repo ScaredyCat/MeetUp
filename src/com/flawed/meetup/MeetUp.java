@@ -1,7 +1,11 @@
 package com.flawed.meetup;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -16,18 +20,24 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 
 public class MeetUp extends Activity {
     /** Called when the activity is first created. */
     private static final int MENU_ID = Menu.FIRST;
     private static final int CONTEXT_ID = Menu.FIRST + 1;
-	CheckBox[] store;
+//	private int numParticipants = 3;
+	private ScrollView sv;
+	private LinearLayout ll;
+	private String JSONString = "{\"event\":\"TestEvent\",\"numParticipants\":3,\"locx\":15,\"locy\":25,\"participants\":[{\"name\":\"Jill\",\"locx\":15,\"locy\":25,\"isClose\":true},{\"name\":\"Claire\",\"locx\":20,\"locy\":20,\"isClose\":true},{\"name\":\"Leon\",\"locx\":25,\"locy\":15,\"isClose\":false}]}";
+	private JSONObject JSONEvent;
+	private Event testEvent;
+	private ServerConnector conn = new ServerConnector();
+	
 	CheckBox tempCb;
 	TextView tempTv;
 	Map<String, CheckBox> participantsCb = new HashMap<String, CheckBox>();
 	Map<String, TextView> participantsTv = new HashMap<String, TextView>();
-	int j = 20;
+
 
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -53,7 +63,7 @@ public class MeetUp extends Activity {
         menu.add(0, CONTEXT_ID, 0, R.string.context_show);
 	}
 
-    @Override
+/*    @Override
 	public boolean onContextItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
     	case CONTEXT_ID:
@@ -63,15 +73,21 @@ public class MeetUp extends Activity {
 	        return true;
 		}
 		return super.onContextItemSelected(item);
-	}
+	}*/
     
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        ScrollView sv = new ScrollView(this);
-        LinearLayout ll = new LinearLayout(this);
+        try {
+        	JSONEvent = new JSONObject(JSONString);
+        }catch(JSONException JSON2) {
+        	//@TODO
+        }
+        
+        sv = new ScrollView(this);
+        ll = new LinearLayout(this);
         ll.setOrientation(LinearLayout.VERTICAL);
         sv.addView(ll);
         
@@ -79,8 +95,22 @@ public class MeetUp extends Activity {
         et.setText("Filter:");
         ll.addView(et);
         
-        store = new CheckBox[j];
-        for(int i=0; i < j; i++) {
+        try {
+        	testEvent = new Event(conn.connect());
+        }catch(JSONException JSON1) {
+        	//@TODO
+        }catch(IOException IO1) {
+        	//@TODO
+        }
+        
+        createLayout(testEvent);
+        
+        setContentView(sv);
+        
+    } //End of onCreate
+    
+    public synchronized void createLayout(Event event) {
+        for(int i=0; i < event.getNumParticipants(); i++) {
         	
             LinearLayout llin = new LinearLayout(this);
             llin.setOrientation(LinearLayout.HORIZONTAL);
@@ -96,26 +126,18 @@ public class MeetUp extends Activity {
         	tempCb.setId(i);
         	tempCb.setClickable(false);
         	tempTv.setId(i);
-        	tempTv.setText("Dynamic no "+(i+1));
+        	tempTv.setText(event.participantArray[i].getName());
         	tempTv.setPadding(5, 0, 0, 0);
         	tempTv.setGravity(Gravity.RIGHT);
         	
+        	if(event.participantArray[i].isClose() == true) {
+        		tempCb.setChecked(true);
+        	}
+        	      	
         	llin.addView((CheckBox) participantsCb.get("id"+i));
         	llin.addView((TextView) participantsTv.get("id"+i));
         	
         	ll.addView(llin);
-        }
-        
-        tempCb = (CheckBox)participantsCb.get("id4");
-        tempCb.setChecked(true);
-        tempCb = (CheckBox)participantsCb.get("id8");
-        tempCb.setChecked(true);
-        tempCb = (CheckBox)participantsCb.get("id1");
-        tempCb.setChecked(true);
-        tempCb = null;
-        
-        
-        setContentView(sv);
-        
-    }
-}
+        }   	
+    }//End of createLayout
+}//End of Class

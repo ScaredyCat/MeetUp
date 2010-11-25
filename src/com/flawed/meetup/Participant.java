@@ -13,6 +13,7 @@ public class Participant {
 		name = participant.getString("name");
 		locx = participant.getInt("locx");
 		locy = participant.getInt("locy");	
+		isClose = participant.getBoolean("isClose");
 	}
 	
 	public String getName() {
