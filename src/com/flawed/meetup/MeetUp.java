@@ -91,9 +91,11 @@ public class MeetUp extends Activity {
         ll.setOrientation(LinearLayout.VERTICAL);
         sv.addView(ll);
         
-        EditText et = new EditText(this);
-        et.setText("Filter:");
-        ll.addView(et);
+
+        
+//        EditText et = new EditText(this);
+//        et.setText("Filter:");
+//        ll.addView(et);
         
         try {
         	testEvent = new Event(conn.connect());
@@ -102,6 +104,10 @@ public class MeetUp extends Activity {
         }catch(IOException IO1) {
         	//@TODO
         }
+        
+        TextView tv = new TextView(this);
+        tv.setText(testEvent.getName());
+        ll.addView(tv);
         
         createLayout(testEvent);
         

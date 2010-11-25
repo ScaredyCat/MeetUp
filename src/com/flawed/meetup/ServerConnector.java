@@ -53,9 +53,9 @@ public class ServerConnector {
         	}
         }
 
-//		out.close();
-//		in.close();
-//		MUSock.close();
+		out.close();
+		in.close();
+		MUSock.close();
         
 		return JSONEvent;
 	}
