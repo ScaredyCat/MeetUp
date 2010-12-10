@@ -44,7 +44,7 @@ public class ServerConnector {
             System.err.println("Couldn't get I/O for the connection to: " +serverHost);
             System.exit(1);
         }
-        out.println("{\"name\":\"Sami\",\"locx\":25,\"locy\":25,\"isClose\":false}");
+        out.println("{\"name\":\"Sami\",\"locx\":25,\"locy\":25,\"isClose\":false,\"uuid\":\"uuid\"}");
         if((fromServer = in.readLine()) != null) {
         	try {
         		JSONEvent = new JSONObject(fromServer);

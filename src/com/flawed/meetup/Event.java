@@ -13,7 +13,7 @@ public class Event {
 	private JSONArray participants;
 	
 	public Event(JSONObject event) throws JSONException{
-		name = event.getString("event");
+		name = event.getString("name");
 		numParticipants = event.getInt("numParticipants");
 		locx = event.getInt("locx");
 		locy = event.getInt("locy");

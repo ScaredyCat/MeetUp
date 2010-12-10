@@ -4,4 +4,5 @@
     <string name="app_name">Meet Up</string>
 <string name="menu_pref">Preferences</string>
 <string name="context_show">Show on map</string>
+<string name="menu_uuid">Show UUID</string>
 </resources>

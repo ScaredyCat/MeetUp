@@ -3,35 +3,40 @@ package com.flawed.meetup;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class MeetUp extends Activity {
     /** Called when the activity is first created. */
-    private static final int MENU_ID = Menu.FIRST;
+    private static final int PREF_ID = Menu.FIRST;
     private static final int CONTEXT_ID = Menu.FIRST + 1;
-//	private int numParticipants = 3;
 	private ScrollView sv;
 	private LinearLayout ll;
 	private String JSONString = "{\"event\":\"TestEvent\",\"numParticipants\":3,\"locx\":15,\"locy\":25,\"participants\":[{\"name\":\"Jill\",\"locx\":15,\"locy\":25,\"isClose\":true},{\"name\":\"Claire\",\"locx\":20,\"locy\":20,\"isClose\":true},{\"name\":\"Leon\",\"locx\":25,\"locy\":15,\"isClose\":false}]}";
 	private JSONObject JSONEvent;
+	private JSONObject self;
 	private Event testEvent;
 	private ServerConnector conn = new ServerConnector();
+	private SharedPreferences preferences;
+	private String uuid;
 	
 	CheckBox tempCb;
 	TextView tempTv;
@@ -41,26 +46,31 @@ public class MeetUp extends Activity {
 
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        menu.add(0, MENU_ID, 0, R.string.menu_pref);
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu, menu);
         return true;
     }
     
+	
     @Override
-    public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        switch(item.getItemId()) {
-        case MENU_ID:
-            //createNote();
-            return true;
-        }  
-        return super.onMenuItemSelected(featureId, item);
-    }
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		// We have only one menu option
+			case R.id.preferences:
+				// Launch Preference activity
+				Intent i = new Intent(MeetUp.this, Preferences.class);
+				startActivity(i);
+				break;
+			}
+		return true;
+	}
     
     @Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
         menu.add(0, CONTEXT_ID, 0, R.string.context_show);
+        preferences = getSharedPreferences("MUP", MODE_PRIVATE);
 	}
 
 /*    @Override
@@ -80,6 +90,17 @@ public class MeetUp extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        preferences = getSharedPreferences("MUP", MODE_PRIVATE);
+        
+        if(!preferences.contains("uuid")) {
+        	uuid = UUID.randomUUID().toString();
+        	SharedPreferences.Editor editor = preferences.edit();
+        	editor.putString("uuid", uuid);
+        	editor.commit();
+        }else {
+        	uuid = preferences.getString("uuid", "n/a");
+        }
+        
         try {
         	JSONEvent = new JSONObject(JSONString);
         }catch(JSONException JSON2) {
@@ -91,11 +112,6 @@ public class MeetUp extends Activity {
         ll.setOrientation(LinearLayout.VERTICAL);
         sv.addView(ll);
         
-
-        
-//        EditText et = new EditText(this);
-//        et.setText("Filter:");
-//        ll.addView(et);
         
         try {
         	testEvent = new Event(conn.connect());
