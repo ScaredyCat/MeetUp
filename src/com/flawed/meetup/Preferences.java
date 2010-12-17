@@ -1,6 +1,5 @@
 package com.flawed.meetup;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
@@ -16,7 +15,7 @@ public class Preferences extends PreferenceActivity{
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		preferences = getSharedPreferences("MUP", MODE_PRIVATE);
-		SharedPreferences.Editor editor = preferences.edit();
+//		SharedPreferences.Editor editor = preferences.edit();
 		
 		addPreferencesFromResource(R.xml.preferences);
 	}

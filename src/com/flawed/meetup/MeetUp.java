@@ -11,6 +11,8 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.Gravity;
@@ -26,17 +28,15 @@ import android.widget.TextView;
 
 public class MeetUp extends Activity {
     /** Called when the activity is first created. */
-    private static final int PREF_ID = Menu.FIRST;
     private static final int CONTEXT_ID = Menu.FIRST + 1;
 	private ScrollView sv;
 	private LinearLayout ll;
-	private String JSONString = "{\"event\":\"TestEvent\",\"numParticipants\":3,\"locx\":15,\"locy\":25,\"participants\":[{\"name\":\"Jill\",\"locx\":15,\"locy\":25,\"isClose\":true},{\"name\":\"Claire\",\"locx\":20,\"locy\":20,\"isClose\":true},{\"name\":\"Leon\",\"locx\":25,\"locy\":15,\"isClose\":false}]}";
-	private JSONObject JSONEvent;
 	private JSONObject self;
 	private Event testEvent;
 	private ServerConnector conn = new ServerConnector();
 	private SharedPreferences preferences;
 	private String uuid;
+	private LocationManager locationManager;
 	
 	CheckBox tempCb;
 	TextView tempTv;
@@ -87,7 +87,7 @@ public class MeetUp extends Activity {
     
     /** Called when the activity is first created. */
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public synchronized void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         preferences = getSharedPreferences("MUP", MODE_PRIVATE);
@@ -96,25 +96,39 @@ public class MeetUp extends Activity {
         	uuid = UUID.randomUUID().toString();
         	SharedPreferences.Editor editor = preferences.edit();
         	editor.putString("uuid", uuid);
+        	editor.putString("firstname", "Sami");
+        	editor.putString("lastname", "Test");
         	editor.commit();
         }else {
-        	uuid = preferences.getString("uuid", "n/a");
+        	uuid = preferences.getString("uuid", "na");
         }
-        
-        try {
-        	JSONEvent = new JSONObject(JSONString);
-        }catch(JSONException JSON2) {
-        	//@TODO
-        }
-        
+                
         sv = new ScrollView(this);
         ll = new LinearLayout(this);
         ll.setOrientation(LinearLayout.VERTICAL);
         sv.addView(ll);
         
-        
+        locationManager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
+        Location location = locationManager.getLastKnownLocation("gps");
+           
+		if(location == null) {
+			location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		}
+		
+		if(location == null) {
+			location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		}		
+  
         try {
-        	testEvent = new Event(conn.connect());
+        	self = new JSONObject();
+        	self.put("first_name", preferences.getString("firstname", "na"));
+        	self.put("last_name", preferences.getString("lastname", "na"));
+        	self.put("uuid", preferences.getString("uuid", "na"));
+        	self.put("loclat", location.getLatitude());
+        	self.put("loclong", location.getLongitude());
+        	self.put("isClose", "[{\"eId\":0, \"isClose\":TRUE},{\"eId\":1, \"isClose\":TRUE},{\"eId\":2, \"isClose\":TRUE}]");
+        	
+        	testEvent = new Event(conn.connect(self));
         }catch(JSONException JSON1) {
         	//@TODO
         }catch(IOException IO1) {
@@ -161,5 +175,5 @@ public class MeetUp extends Activity {
         	
         	ll.addView(llin);
         }   	
-    }//End of createLayout
+    }//End of createLayout 
 }//End of Class

@@ -17,7 +17,9 @@ public class ServerConnector {
 	private PrintWriter out;
 	private BufferedReader in;
 	private String fromServer;
-	private JSONObject JSONEvent;	
+	private String toServer;
+	private JSONObject JSONEvent;
+	private JSONObject self;
 	
 	public ServerConnector(){
 		MUSock = null;
@@ -31,8 +33,9 @@ public class ServerConnector {
 	 * @throws IOException
 	 * @TODO Add the client output part.
 	 */
-	public JSONObject connect() throws IOException {
-		
+	public JSONObject connect(JSONObject self) throws IOException {
+		this.self = self;
+		toServer = self.toString();
         try {
             MUSock = new Socket(serverHost, serverPort);
             out = new PrintWriter(MUSock.getOutputStream(), true);
@@ -43,13 +46,13 @@ public class ServerConnector {
         } catch (IOException e) {
             System.err.println("Couldn't get I/O for the connection to: " +serverHost);
             System.exit(1);
-        }
-        out.println("{\"name\":\"Sami\",\"locx\":25,\"locy\":25,\"isClose\":false,\"uuid\":\"uuid\"}");
+        }          
+        out.println(self);
         if((fromServer = in.readLine()) != null) {
         	try {
         		JSONEvent = new JSONObject(fromServer);
         	}catch(JSONException JSON1) {
-        		//@TODO
+        		JSON1.printStackTrace();
         	}
         }
 
