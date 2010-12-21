@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.Menu;
@@ -25,6 +26,7 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MeetUp extends Activity {
     /** Called when the activity is first created. */
@@ -34,7 +36,8 @@ public class MeetUp extends Activity {
 	private JSONObject self;
 	private Event testEvent;
 	private ServerConnector conn = new ServerConnector();
-	private SharedPreferences preferences;
+	private SharedPreferences cPreferences;
+	private SharedPreferences dPreferences;
 	private String uuid;
 	private Location location;
 	
@@ -61,6 +64,8 @@ public class MeetUp extends Activity {
 				Intent i = new Intent(MeetUp.this, Preferences.class);
 				startActivity(i);
 				break;
+			case R.id.refresh:
+				this.onCreate();
 			}
 		return true;
 	}
@@ -70,7 +75,7 @@ public class MeetUp extends Activity {
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
         menu.add(0, CONTEXT_ID, 0, R.string.context_show);
-        preferences = getSharedPreferences("MUP", MODE_PRIVATE);
+        cPreferences = getSharedPreferences("MUP", MODE_PRIVATE);
 	}
 
 /*    @Override
@@ -90,7 +95,8 @@ public class MeetUp extends Activity {
     public synchronized void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        preferences = getSharedPreferences("MUP", MODE_PRIVATE);
+        cPreferences = getSharedPreferences("MUP", MODE_PRIVATE);
+        dPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         
         updateUuid();
         if(uuid.equals("na")) {
@@ -99,26 +105,71 @@ public class MeetUp extends Activity {
        	
         location = getLocation();
         
-        self = createSelf();
-        
-        try {
-    		testEvent = new Event(conn.connect(self));
-        }catch(JSONException json1){
-        	json1.printStackTrace();
-        }catch(IOException io1) {
-        	io1.printStackTrace();
+        if(dPreferences.contains("firstname") && dPreferences.contains("lastname")) {
+        	
+        	self = createSelf();       
+	        try {
+	    		testEvent = new Event(conn.connect(self));
+	        }catch(JSONException json1){
+	        	json1.printStackTrace();
+	        }catch(IOException io1) {
+	        	io1.printStackTrace();
+	        }
+	        createLayout(testEvent);
+        }else {
+        	Toast.makeText(MeetUp.this,
+    				"Please input your names in the preferences dialog.",
+    				Toast.LENGTH_LONG).show();
         }
        
-        createLayout(testEvent);
+
+                
+    } //End of onCreate(savedInstanceState)
+    
+    public synchronized void onCreate() {        
+        cPreferences = getSharedPreferences("MUP", MODE_PRIVATE);
+        dPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        
+        updateUuid();
+        if(uuid.equals("na")) {
+        	updateUuid();
+        }
+       	
+        location = getLocation();
+        
+        if(dPreferences.contains("firstname") && dPreferences.contains("lastname")) {
+        	
+        	self = createSelf();       
+	        try {
+	    		testEvent = new Event(conn.connect(self));
+	        }catch(JSONException json1){
+	        	json1.printStackTrace();
+	        }catch(IOException io1) {
+	        	io1.printStackTrace();
+	        }
+	        createLayout(testEvent);
+        }else {
+        	Toast.makeText(MeetUp.this,
+    				"Please input your names in the preferences dialog, you can access it from the menu.",
+    				Toast.LENGTH_LONG).show();
+        }
+       
+
                 
     } //End of onCreate
+    
+    @Override
+    public void onStart() {
+    	super.onStart();
+    	this.onCreate();
+    }
     
     public synchronized JSONObject createSelf() {
         try {
         	self = new JSONObject();
-        	self.put("first_name", preferences.getString("firstname", "na"));
-        	self.put("last_name", preferences.getString("lastname", "na"));
-        	self.put("uuid", preferences.getString("uuid", "na"));
+        	self.put("first_name", dPreferences.getString("firstname", "na"));
+        	self.put("last_name", dPreferences.getString("lastname", "na"));
+        	self.put("uuid", cPreferences.getString("uuid", "na"));
         	self.put("loclat", location.getLatitude());
         	self.put("loclong", location.getLongitude());
         	self.put("isClose", "[{\"eId\":0, \"isClose\":TRUE},{\"eId\":1, \"isClose\":TRUE},{\"eId\":2, \"isClose\":TRUE}]");
@@ -144,15 +195,13 @@ public class MeetUp extends Activity {
     } //End of getLocation
     
     public synchronized void updateUuid() {
-	    if(!preferences.contains("uuid")) {
+	    if(!cPreferences.contains("uuid")) {
 	    	uuid = UUID.randomUUID().toString();
-	    	SharedPreferences.Editor editor = preferences.edit();
+	    	SharedPreferences.Editor editor = cPreferences.edit();
 	    	editor.putString("uuid", uuid);
-	    	editor.putString("first_name", "Sami");
-	    	editor.putString("last_name", "Test");
 	    	editor.commit();
 	    }else {
-	    	uuid = preferences.getString("uuid", "na");
+	    	uuid = cPreferences.getString("uuid", "na");	    	
 	    }
     	
     }//End of updateUuid

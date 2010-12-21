@@ -25,6 +25,13 @@ public class Preferences extends PreferenceActivity{
 		menu.add(0, UUID_TOAST_ID, 0, R.string.menu_uuid);
         return true;
     }
+	
+//	@Override
+//	public void onStop() {
+//		preferences = getSharedPreferences("MUP", MODE_PRIVATE);
+//		SharedPreferences.Editor editor = preferences.edit();
+//
+//	}
 	   
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {

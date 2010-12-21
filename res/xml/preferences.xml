@@ -2,8 +2,17 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-<PreferenceCategory android:title="User Settings"><EditTextPreference android:key="firstname" android:title="First name" android:summary="Please input your first name"></EditTextPreference>
-<EditTextPreference android:key="lastname" android:title="Last name" android:summary="Please input your last name"></EditTextPreference>
+<PreferenceCategory android:title="User Settings">
+<EditTextPreference 
+	android:key="firstname" 
+	android:title="First name" 
+	android:summary="Please input your first name">
+</EditTextPreference>
+<EditTextPreference 
+	android:key="lastname" 
+	android:title="Last name" 
+	android:summary="Please input your last name">
+</EditTextPreference>
 
 
 

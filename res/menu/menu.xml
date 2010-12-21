@@ -4,4 +4,5 @@
 <item android:id="@+id/preferences" android:title="Preferences">
 </item>
 
+<item android:id="@+id/refresh" android:title="Refresh"></item>
 </menu>
