@@ -6,7 +6,6 @@ import org.json.JSONObject;
 public class Participant {
 	private String first_name;
 	private String last_name;
-	private String uuid;
 	private int loclat;
 	private int loclong;
 	private boolean isClose;
@@ -17,7 +16,6 @@ public class Participant {
 		loclat = participant.getInt("loclat");
 		loclong = participant.getInt("loclong");	
 		isClose = participant.getBoolean("isClose");
-		uuid = participant.getString("uuid");
 	}
 	
 	public String getName() {
