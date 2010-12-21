@@ -36,7 +36,7 @@ public class MeetUp extends Activity {
 	private ServerConnector conn = new ServerConnector();
 	private SharedPreferences preferences;
 	private String uuid;
-	private LocationManager locationManager;
+	private Location location;
 	
 	CheckBox tempCb;
 	TextView tempTv;
@@ -92,33 +92,28 @@ public class MeetUp extends Activity {
         
         preferences = getSharedPreferences("MUP", MODE_PRIVATE);
         
-        if(!preferences.contains("uuid")) {
-        	uuid = UUID.randomUUID().toString();
-        	SharedPreferences.Editor editor = preferences.edit();
-        	editor.putString("uuid", uuid);
-        	editor.putString("firstname", "Sami");
-        	editor.putString("lastname", "Test");
-        	editor.commit();
-        }else {
-        	uuid = preferences.getString("uuid", "na");
+        updateUuid();
+        if(uuid.equals("na")) {
+        	updateUuid();
         }
-                
-        sv = new ScrollView(this);
-        ll = new LinearLayout(this);
-        ll.setOrientation(LinearLayout.VERTICAL);
-        sv.addView(ll);
+       	
+        location = getLocation();
         
-        locationManager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
-        Location location = locationManager.getLastKnownLocation("gps");
-           
-		if(location == null) {
-			location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		}
-		
-		if(location == null) {
-			location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-		}		
-  
+        self = createSelf();
+        
+        try {
+    		testEvent = new Event(conn.connect(self));
+        }catch(JSONException json1){
+        	json1.printStackTrace();
+        }catch(IOException io1) {
+        	io1.printStackTrace();
+        }
+       
+        createLayout(testEvent);
+                
+    } //End of onCreate
+    
+    public synchronized JSONObject createSelf() {
         try {
         	self = new JSONObject();
         	self.put("first_name", preferences.getString("firstname", "na"));
@@ -128,24 +123,52 @@ public class MeetUp extends Activity {
         	self.put("loclong", location.getLongitude());
         	self.put("isClose", "[{\"eId\":0, \"isClose\":TRUE},{\"eId\":1, \"isClose\":TRUE},{\"eId\":2, \"isClose\":TRUE}]");
         	
-        	testEvent = new Event(conn.connect(self));
         }catch(JSONException JSON1) {
         	//@TODO
-        }catch(IOException IO1) {
-        	//@TODO
         }
+    	return self;
+    }
+    
+    public synchronized Location getLocation() {
+        LocationManager locationManager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
+        Location location = locationManager.getLastKnownLocation("gps");
+           
+		if(location == null) {
+			location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		}
+		
+		if(location == null) {
+			location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		}
+		return location;
+    } //End of getLocation
+    
+    public synchronized void updateUuid() {
+	    if(!preferences.contains("uuid")) {
+	    	uuid = UUID.randomUUID().toString();
+	    	SharedPreferences.Editor editor = preferences.edit();
+	    	editor.putString("uuid", uuid);
+	    	editor.putString("first_name", "Sami");
+	    	editor.putString("last_name", "Test");
+	    	editor.commit();
+	    }else {
+	    	uuid = preferences.getString("uuid", "na");
+	    }
+    	
+    }//End of updateUuid
+
+    
+    public synchronized void createLayout(Event event) {
+    	        
+        sv = new ScrollView(this);
+        ll = new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
+        sv.addView(ll);
         
         TextView tv = new TextView(this);
         tv.setText(testEvent.getName());
         ll.addView(tv);
-        
-        createLayout(testEvent);
-        
-        setContentView(sv);
-        
-    } //End of onCreate
-    
-    public synchronized void createLayout(Event event) {
+    	
         for(int i=0; i < event.getNumParticipants(); i++) {
         	
             LinearLayout llin = new LinearLayout(this);
@@ -174,6 +197,7 @@ public class MeetUp extends Activity {
         	llin.addView((TextView) participantsTv.get("id"+i));
         	
         	ll.addView(llin);
-        }   	
+        }
+        setContentView(sv);
     }//End of createLayout 
 }//End of Class

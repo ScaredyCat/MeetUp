@@ -53,6 +53,7 @@ public class ServerConnector {
         		JSONEvent = new JSONObject(fromServer);
         	}catch(JSONException JSON1) {
         		JSON1.printStackTrace();
+        		System.out.println("ERROR OLOL!");
         	}
         }
 

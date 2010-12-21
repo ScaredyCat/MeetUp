@@ -4,28 +4,41 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Participant {
-	private String name;
-	private int locx;
-	private int locy;
+	private String first_name;
+	private String last_name;
+	private String uuid;
+	private int loclat;
+	private int loclong;
 	private boolean isClose;
 	
 	Participant(JSONObject participant) throws JSONException{
-		name = participant.getString("name");
-		locx = participant.getInt("locx");
-		locy = participant.getInt("locy");	
+		first_name = participant.getString("first_name");
+		last_name = participant.getString("last_name");
+		loclat = participant.getInt("loclat");
+		loclong = participant.getInt("loclong");	
 		isClose = participant.getBoolean("isClose");
+		uuid = participant.getString("uuid");
 	}
 	
 	public String getName() {
+		String name = first_name + " " + last_name;
 		return name;
 	}
 	
-	public int getx(){
-		return locx;
+	public String getFirstName() {
+		return first_name;
 	}
 	
-	public int gety() {
-		return locy;
+	public String getLastName() {
+		return last_name;
+	}
+	
+	public int getlat(){
+		return loclat;
+	}
+	
+	public int getlong() {
+		return loclong;
 	}
 	
 	public boolean isClose() {
