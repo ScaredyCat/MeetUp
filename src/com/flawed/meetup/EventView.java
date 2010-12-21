@@ -19,25 +19,24 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MeetUp extends Activity {
-    /** Called when the activity is first created. */
+public class EventView extends Activity {
 	private ScrollView sv;
 	private LinearLayout ll;
 	private JSONObject self;
-	private JSONObject eventList;
+	private Event testEvent;
 	private ServerConnector conn = new ServerConnector();
 	private SharedPreferences cPreferences;
 	private SharedPreferences dPreferences;
 	private String uuid;
 	private Location location;
-		
+	private long eId = -1;
+	
 	CheckBox tempCb;
 	TextView tempTv;
 	Map<String, CheckBox> participantsCb = new HashMap<String, CheckBox>();
@@ -58,7 +57,7 @@ public class MeetUp extends Activity {
 		// We have only one menu option
 			case R.id.preferences:
 				// Launch Preference activity
-				Intent i = new Intent(MeetUp.this, Preferences.class);
+				Intent i = new Intent(EventView.this, Preferences.class);
 				startActivity(i);
 				break;
 			case R.id.refresh:
@@ -73,8 +72,11 @@ public class MeetUp extends Activity {
         super.onCreate(savedInstanceState);
         
         cPreferences = getSharedPreferences("MUP", MODE_PRIVATE);
-        dPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        
+        dPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());        
+
+        Bundle extras = getIntent().getExtras();
+        eId = extras.getLong("eId");
+             
         updateUuid();
         if(uuid.equals("na")) {
         	updateUuid();
@@ -86,18 +88,15 @@ public class MeetUp extends Activity {
         	
         	self = createSelf();       
 	        try {
-	    		eventList = conn.getEventList(self);
+	    		testEvent = new Event(conn.getEvent(self, eId));
 	        }catch(JSONException json1){
 	        	json1.printStackTrace();
 	        }catch(IOException io1) {
 	        	io1.printStackTrace();
 	        }
-	        
-	        
-	        	        
-	        createLayout(eventList);
+	        createLayout(testEvent);
         }else {
-        	Toast.makeText(MeetUp.this,
+        	Toast.makeText(EventView.this,
     				"Please input your names in the preferences dialog.",
     				Toast.LENGTH_LONG).show();
         }
@@ -110,6 +109,9 @@ public class MeetUp extends Activity {
         cPreferences = getSharedPreferences("MUP", MODE_PRIVATE);
         dPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         
+        Bundle extras = getIntent().getExtras();
+        eId = extras.getLong("eId");
+        
         updateUuid();
         if(uuid.equals("na")) {
         	updateUuid();
@@ -121,15 +123,15 @@ public class MeetUp extends Activity {
         	
         	self = createSelf();       
 	        try {
-	    		eventList = conn.getEventList(self);
+	    		testEvent = new Event(conn.getEventList(self));
 	        }catch(JSONException json1){
 	        	json1.printStackTrace();
 	        }catch(IOException io1) {
 	        	io1.printStackTrace();
 	        }
-	        createLayout(eventList);
+	        createLayout(testEvent);
         }else {
-        	Toast.makeText(MeetUp.this,
+        	Toast.makeText(EventView.this,
     				"Please input your names in the preferences dialog, you can access it from the menu.",
     				Toast.LENGTH_LONG).show();
         }
@@ -155,7 +157,7 @@ public class MeetUp extends Activity {
         	self.put("isClose", "[{\"eId\":0, \"isClose\":TRUE},{\"eId\":1, \"isClose\":TRUE},{\"eId\":2, \"isClose\":TRUE}]");
         	
         }catch(JSONException JSON1) {
-        	JSON1.printStackTrace();
+        	//@TODO
         }
     	return self;
     }
@@ -187,61 +189,46 @@ public class MeetUp extends Activity {
     }//End of updateUuid
 
     
-    public synchronized void createLayout(JSONObject eventList) {
-    	try {        
-	        sv = new ScrollView(this);
-	        ll = new LinearLayout(this);
-	        ll.setOrientation(LinearLayout.VERTICAL);
-	        sv.addView(ll);
-	        
-	        TextView tv = new TextView(this);
-	        tv.setText("List of your Events");
-	        ll.addView(tv);
-	    	
-	        for(int i=0; i < eventList.getInt("numEvents"); i++) {
-	        	
-	            LinearLayout llin = new LinearLayout(this);
-	            llin.setOrientation(LinearLayout.HORIZONTAL);
-	            llin.setPadding(1, 2, 2, 1);
-	            
-	        	participantsCb.put("id"+i, new CheckBox(this));
-	        	participantsTv.put("id"+i, new TextView(this));
-	        	
-	        	tempCb = (CheckBox)participantsCb.get("id"+i);        	
-	        	tempTv = (TextView)participantsTv.get("id"+i);
-	        	
-	        	tempCb.setPadding(0, 0, 5, 0);
-	        	tempCb.setId(i);
-	        	tempCb.setClickable(false);
-	        	tempTv.setId(eventList.getJSONArray("eventArray").getJSONObject(i).getInt("eId"));
-	        	tempTv.setText(eventList.getJSONArray("eventArray").getJSONObject(i).getString("name"));
-	        	tempTv.setPadding(5, 0, 0, 0);
-	        	tempTv.setGravity(Gravity.RIGHT);
-	        	tempTv.setOnClickListener(new View.OnClickListener() {	        		
-	        		long eId = tempTv.getId();
-					@Override
-					public void onClick(View v) {
-						Intent intent = new Intent(MeetUp.this, EventView.class);
-						intent.putExtra("eId", eId);
-						startActivity(intent);						
-					}
-				});
-	        	
-	        	if(eventList.getJSONArray("eventArray").getJSONObject(i)
-	        			.getLong("loclat") == location.getLatitude() 
-	        	&& eventList.getJSONArray("eventArray").getJSONObject(i)
-	        			.getLong("loclong") == location.getLongitude()) {
-	        		tempCb.setChecked(true);
-	        	}
-    	      	
-	        	llin.addView((CheckBox) participantsCb.get("id"+i));
-	        	llin.addView((TextView) participantsTv.get("id"+i));
-	        	
-	        	ll.addView(llin);
-	        }
-    	}catch(JSONException e) {
-    		e.printStackTrace();
-    	}
+    public synchronized void createLayout(Event event) {
+    	        
+        sv = new ScrollView(this);
+        ll = new LinearLayout(this);
+        ll.setOrientation(LinearLayout.VERTICAL);
+        sv.addView(ll);
+        
+        TextView tv = new TextView(this);
+        tv.setText(testEvent.getName());
+        ll.addView(tv);
+    	
+        for(int i=0; i < event.getNumParticipants(); i++) {
+        	
+            LinearLayout llin = new LinearLayout(this);
+            llin.setOrientation(LinearLayout.HORIZONTAL);
+            llin.setPadding(1, 2, 2, 1);
+            
+        	participantsCb.put("id"+i, new CheckBox(this));
+        	participantsTv.put("id"+i, new TextView(this));
+        	
+        	tempCb = (CheckBox)participantsCb.get("id"+i);        	
+        	tempTv = (TextView)participantsTv.get("id"+i);
+        	
+        	tempCb.setPadding(0, 0, 5, 0);
+        	tempCb.setId(i);
+        	tempCb.setClickable(false);
+        	tempTv.setId(i);
+        	tempTv.setText(event.participantArray[i].getName());
+        	tempTv.setPadding(5, 0, 0, 0);
+        	tempTv.setGravity(Gravity.RIGHT);
+        	
+        	if(event.participantArray[i].isClose() == true) {
+        		tempCb.setChecked(true);
+        	}
+        	      	
+        	llin.addView((CheckBox) participantsCb.get("id"+i));
+        	llin.addView((TextView) participantsTv.get("id"+i));
+        	
+        	ll.addView(llin);
+        }
         setContentView(sv);
     }//End of createLayout 
-}//End of Class
+}

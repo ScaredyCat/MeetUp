@@ -47,7 +47,7 @@ public class Preferences extends PreferenceActivity{
     public void showUUID() {
     	String uuid = preferences.getString("uuid", "n/a");
     	Toast.makeText(Preferences.this,
-				"Your maintained uuid: " + uuid,
+				"Your saved uuid: " + uuid,
 				Toast.LENGTH_LONG).show();
     }
 }
