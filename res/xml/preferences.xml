@@ -16,5 +16,6 @@
 
 
 
+<EditTextPreference android:key="uuid" android:title="Unique User ID" android:summary="DEBUG: Force change UUID"></EditTextPreference>
 </PreferenceCategory>
 </PreferenceScreen>

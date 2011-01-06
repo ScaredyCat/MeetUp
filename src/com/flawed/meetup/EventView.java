@@ -3,8 +3,8 @@ package com.flawed.meetup;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,6 +29,7 @@ public class EventView extends Activity {
 	private ScrollView sv;
 	private LinearLayout ll;
 	private JSONObject self;
+	private JSONArray isCloseArray;
 	private Event testEvent;
 	private ServerConnector conn = new ServerConnector();
 	private SharedPreferences cPreferences;
@@ -76,15 +77,19 @@ public class EventView extends Activity {
 
         Bundle extras = getIntent().getExtras();
         eId = extras.getLong("eId");
-             
-        updateUuid();
-        if(uuid.equals("na")) {
-        	updateUuid();
+        try {
+        	isCloseArray = new JSONArray(extras.getString("isCloseArray"));
+        }catch(JSONException e) {
+        	e.printStackTrace();
         }
+//        updateUuid();
+//        if(uuid.equals("na")) {
+//        	updateUuid();
+//        }
        	
         location = getLocation();
         
-        if(dPreferences.contains("firstname") && dPreferences.contains("lastname")) {
+        if(dPreferences.contains("firstname") && dPreferences.contains("lastname") && dPreferences.contains("uuid")) {
         	
         	self = createSelf();       
 	        try {
@@ -112,14 +117,14 @@ public class EventView extends Activity {
         Bundle extras = getIntent().getExtras();
         eId = extras.getLong("eId");
         
-        updateUuid();
-        if(uuid.equals("na")) {
-        	updateUuid();
-        }
+//        updateUuid();
+//        if(uuid.equals("na")) {
+//        	updateUuid();
+//        }
        	
         location = getLocation();
         
-        if(dPreferences.contains("firstname") && dPreferences.contains("lastname")) {
+        if(dPreferences.contains("firstname") && dPreferences.contains("lastname") && dPreferences.contains("uuid")) {
         	
         	self = createSelf();       
 	        try {
@@ -151,10 +156,10 @@ public class EventView extends Activity {
         	self = new JSONObject();
         	self.put("first_name", dPreferences.getString("firstname", "na"));
         	self.put("last_name", dPreferences.getString("lastname", "na"));
-        	self.put("uuid", cPreferences.getString("uuid", "na"));
+        	self.put("uuid", dPreferences.getString("uuid", "na"));
         	self.put("loclat", location.getLatitude());
         	self.put("loclong", location.getLongitude());
-        	self.put("isClose", "[{\"eId\":0, \"isClose\":TRUE},{\"eId\":1, \"isClose\":TRUE},{\"eId\":2, \"isClose\":TRUE}]");
+        	self.put("isClose", isCloseArray.toString());
         	
         }catch(JSONException JSON1) {
         	//@TODO
@@ -176,17 +181,17 @@ public class EventView extends Activity {
 		return location;
     } //End of getLocation
     
-    public synchronized void updateUuid() {
-	    if(!cPreferences.contains("uuid")) {
-	    	uuid = UUID.randomUUID().toString();
-	    	SharedPreferences.Editor editor = cPreferences.edit();
-	    	editor.putString("uuid", uuid);
-	    	editor.commit();
-	    }else {
-	    	uuid = cPreferences.getString("uuid", "na");	    	
-	    }
-    	
-    }//End of updateUuid
+//    public synchronized void updateUuid() {
+//	    if(!cPreferences.contains("uuid")) {
+//	    	uuid = UUID.randomUUID().toString();
+//	    	SharedPreferences.Editor editor = cPreferences.edit();
+//	    	editor.putString("uuid", uuid);
+//	    	editor.commit();
+//	    }else {
+//	    	uuid = cPreferences.getString("uuid", "na");	    	
+//	    }
+//    	
+//    }//End of updateUuid
 
     
     public synchronized void createLayout(Event event) {
