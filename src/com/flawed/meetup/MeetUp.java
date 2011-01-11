@@ -207,7 +207,7 @@ public class MeetUp extends Activity {
     
     public synchronized Location getLocation() {
         LocationManager locationManager = (LocationManager)this.getSystemService(LOCATION_SERVICE);
-        //Location location = locationManager.getLastKnownLocation("gps");
+        Location location = locationManager.getLastKnownLocation("gps");
            
 		if(location == null) {
 			location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
